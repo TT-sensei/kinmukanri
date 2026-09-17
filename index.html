@@ -3,1077 +3,192 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f7f3ed">
 <title>勤務管理アプリ</title>
 <style>
-/* ============================================================
-   デザイントークン
-   TT-sensei edu-kit / edu-effects の edu-editorial.css (落ち着いた
-   エディトリアル配色) を土台に、学校の勤務管理向けに調整したもの。
-   出典: https://github.com/TT-sensei/edu-effects/blob/main/css/edu-editorial.css
-   ============================================================ */
 :root{
-  --ink:#2f2a27; --muted:#756c66; --subtle:#a49a91; --line:#ded5cc;
-  --bg:#f7f3ed; --surface:#fffdf9;
-  --primary:#a95f43; --primary-dark:#854833; --primary-soft:#f8ebe4;
-  --accent:#2f7a55; --accent-soft:#dff3e7;
-  --success:#487354; --success-soft:#edf5ee;
-  --warning:#9a6b32; --warning-soft:#fbf3e4;
-  --danger:#a64f48; --danger-soft:#faecea;
-  --radius-sm:6px; --radius-md:10px; --radius-lg:16px;
-  --shadow-sm:0 1px 2px rgb(58 45 35 / 7%);
-  --shadow-md:0 6px 18px rgb(58 45 35 / 10%);
+  --ink:#2f2a27;--muted:#756c66;--subtle:#a49a91;--line:#ded5cc;
+  --bg:#f7f3ed;--surface:#fffdf9;--primary:#a95f43;--primary-dark:#854833;
+  --primary-soft:#f8ebe4;--success:#487354;--success-soft:#edf5ee;
+  --warning:#9a6b32;--warning-soft:#fbf3e4;--danger:#a64f48;--danger-soft:#faecea;
+  --info:#426f8f;--info-soft:#eaf3f8;--radius-sm:7px;--radius-md:11px;--radius-lg:16px;
+  --shadow-sm:0 1px 2px rgb(58 45 35 / 7%);--shadow-md:0 8px 24px rgb(58 45 35 / 12%);
 }
 *{box-sizing:border-box}
-body{
-  margin:0; background:var(--bg); color:var(--ink);
-  font-family:"Hiragino Sans","Yu Gothic",sans-serif;
-  -webkit-tap-highlight-color:transparent;
-}
-button{font-family:inherit}
-.app{max-width:1100px;margin:0 auto;padding:14px 16px 60px}
-
-/* ---- ヘッダー(上部：日付・時計) ---- */
-.top-bar{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:12px;padding:14px 18px;background:var(--surface);
-  border:1px solid var(--line);border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-sm);margin-bottom:12px;flex-wrap:wrap;
-}
-.top-bar .date{font-size:1.05rem;font-weight:700}
-.top-bar .clock{font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--primary-dark)}
-
-/* ---- タブナビ ---- */
-.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
-.tab-btn{
-  appearance:none;border:0;background:transparent;padding:12px 18px;
-  font-size:1rem;font-weight:700;color:var(--muted);cursor:pointer;
-  border-bottom:3px solid transparent;white-space:nowrap;
-}
-.tab-btn.is-active{color:var(--primary-dark);border-bottom-color:var(--primary)}
-
-/* ---- 共通カード/パネル ---- */
-.card{
-  background:var(--surface);border:1px solid var(--line);
-  border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
-  padding:18px;margin-bottom:16px;
-}
-.card h2{margin:0 0 12px;font-size:1.05rem}
-.section-note{color:var(--muted);font-size:.85rem;margin:-6px 0 14px}
-
-/* ---- ボタン ---- */
-.btn{
-  appearance:none;border:1px solid var(--line);border-radius:10px;
-  padding:11px 18px;font-size:.95rem;font-weight:700;cursor:pointer;
-  background:var(--surface);color:var(--ink);transition:transform .12s ease, box-shadow .12s ease;
-  min-height:44px;
-}
-.btn:active{transform:translateY(1px)}
-.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
-.btn-primary:hover{background:var(--primary-dark)}
-.btn-secondary{background:var(--surface);border-color:var(--line)}
-.btn-quiet{background:transparent;border-color:transparent;color:var(--primary-dark)}
-.btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
-.btn-block{width:100%}
-.btn-sm{padding:6px 12px;font-size:.82rem;min-height:34px}
-.btn-row{display:flex;gap:10px;flex-wrap:wrap}
-
-/* ---- 職員ボタン(打刻画面 中央) ---- */
-.staff-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
-  gap:12px;margin-bottom:6px;
-}
-.staff-btn{
-  appearance:none;text-align:left;cursor:pointer;
-  border-radius:var(--radius-md);padding:14px 16px;min-height:104px;
-  border:2px solid var(--line);background:var(--surface);
-  display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow-sm);
-}
-.staff-btn .name{font-size:1.15rem;font-weight:800}
-.staff-btn .status{font-size:.86rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;width:max-content}
-.staff-btn .times{font-size:.9rem;color:var(--muted);font-weight:700}
-.staff-btn.st-none{border-color:var(--line)}
-.staff-btn.st-none .status{background:#efeae4;color:var(--muted)}
-.staff-btn.st-in{border-color:var(--success);background:var(--success-soft);box-shadow:0 0 0 3px rgb(72 115 84 / 18%), 0 5px 14px rgb(72 115 84 / 12%)}
-.staff-btn.st-in .name{color:var(--success)}
-.staff-btn.st-in .status{background:var(--success);color:#fff}
-.staff-btn.st-out{border-color:var(--subtle)}
-.staff-btn.st-out .status{background:var(--success-soft);color:var(--success)}
-
-/* ---- 今日の勤務状況テーブル(下部) / 履歴 / 集計 共通テーブル ---- */
-.table-wrap{overflow-x:auto}
-table.data{width:100%;border-collapse:collapse;font-size:.9rem}
-table.data th,table.data td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-table.data th{color:var(--muted);font-weight:700;font-size:.8rem}
-table.data tr:last-child td{border-bottom:0}
-table.data tbody tr{cursor:pointer}
-table.data tbody tr:hover{background:var(--primary-soft)}
-.pill{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:.78rem;font-weight:700}
-.pill.st-none{background:#efeae4;color:var(--muted)}
-.pill.st-in{background:var(--accent);color:#fff}
-.pill.st-out{background:var(--success-soft);color:var(--success)}
-.total-row td{font-weight:800;background:var(--primary-soft)}
-
-/* ---- フォーム ---- */
-.field{margin-bottom:14px}
-.field label{display:block;font-size:.85rem;font-weight:700;color:var(--muted);margin-bottom:6px}
-.field input[type=time],.field input[type=number],.field input[type=text],.field input[type=date],.field input[type=month]{
-  width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
-  font-size:1rem;background:#fff;color:var(--ink);min-height:44px;
-}
-.field-row{display:flex;gap:14px;flex-wrap:wrap}
-.field-row .field{flex:1;min-width:140px}
-
-/* ---- 職員名簿(設定) ---- */
-.staff-row{
-  display:flex;align-items:center;gap:8px;padding:8px 4px;
-  border-bottom:1px solid var(--line);
-}
-.staff-row:last-child{border-bottom:0}
-.staff-row .staff-name{flex:1;font-weight:700}
-.icon-btn{
-  appearance:none;border:1px solid var(--line);background:#fff;border-radius:8px;
-  width:38px;height:38px;font-size:1rem;cursor:pointer;color:var(--muted);
-}
-.icon-btn:hover{background:var(--primary-soft);color:var(--primary-dark)}
-
-/* ---- モーダル ---- */
-.modal-overlay{
-  position:fixed;inset:0;background:rgb(47 42 39 / 45%);display:none;
-  align-items:center;justify-content:center;padding:20px;z-index:100;
-}
-.modal-overlay.is-open{display:flex}
-.modal{
-  background:var(--surface);border-radius:var(--radius-lg);padding:24px;
-  max-width:420px;width:100%;box-shadow:var(--shadow-md);
-}
-.modal h3{margin:0 0 10px;font-size:1.15rem}
-.modal p{margin:0 0 20px;color:var(--muted);line-height:1.6}
-.modal .btn-row{justify-content:flex-end}
-
-/* ---- トースト ---- */
-.toast{
-  position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);
-  background:var(--ink);color:#fff;padding:13px 22px;border-radius:999px;
-  font-size:.92rem;font-weight:700;box-shadow:var(--shadow-md);
-  opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;
-  z-index:200;max-width:90vw;text-align:center;
-}
-.toast.is-visible{opacity:1;transform:translate(-50%,0)}
-
-/* ---- バックアップ情報 ---- */
-.backup-info{
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
-  background:var(--warning-soft);border:1px solid #eadfc5;border-radius:10px;
-  padding:12px 14px;margin-bottom:14px;font-size:.88rem;color:var(--warning);
-}
-.backup-info.is-ok{background:var(--success-soft);border-color:#d7e6da;color:var(--success)}
-.empty-note{color:var(--muted);font-size:.9rem;padding:14px 4px}
-
-@media(max-width:560px){
-  .top-bar .clock{font-size:1.5rem}
-  .staff-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
-}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic",sans-serif;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit}button{touch-action:manipulation}
+.app{max-width:1120px;margin:0 auto;padding:12px 16px 56px}
+.top-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 17px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);margin-bottom:10px}
+.top-bar .date{font-size:1rem;font-weight:800}.top-bar .clock{font-size:1.9rem;font-weight:900;font-variant-numeric:tabular-nums;color:var(--primary-dark)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab-btn{appearance:none;border:0;background:transparent;padding:11px 17px;font-size:1rem;font-weight:800;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;min-height:46px}.tab-btn.is-active{color:var(--primary-dark);border-bottom-color:var(--primary)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:18px;margin-bottom:14px}.card h2{margin:0 0 10px;font-size:1.08rem}.section-note{color:var(--muted);font-size:.84rem;line-height:1.6;margin:0 0 14px}
+.btn{appearance:none;border:1px solid var(--line);border-radius:10px;padding:10px 17px;min-height:44px;font-size:.95rem;font-weight:800;cursor:pointer;background:var(--surface);color:var(--ink)}.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark)}.btn-secondary{background:var(--surface)}.btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}.btn-quiet{background:transparent;border-color:transparent;color:var(--primary-dark)}.btn-sm{min-height:36px;padding:7px 12px;font-size:.84rem}.btn-row{display:flex;gap:9px;flex-wrap:wrap}.btn:disabled{opacity:.45;cursor:default}
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.staff-btn{appearance:none;text-align:left;width:100%;min-height:126px;display:flex;flex-direction:column;gap:7px;justify-content:flex-start;padding:16px;border:2px solid var(--line);border-radius:var(--radius-md);background:var(--surface);box-shadow:var(--shadow-sm);cursor:pointer}.staff-btn .name{font-size:1.2rem;font-weight:900}.staff-btn .status{display:inline-flex;align-items:center;width:max-content;padding:4px 10px;border-radius:999px;font-size:.84rem;font-weight:900}.staff-btn .times,.staff-btn .ot{font-size:.87rem;font-weight:700;color:var(--muted)}
+.staff-btn.st-none{border-color:var(--line)}.staff-btn.st-none .status{background:#efeae4;color:var(--muted)}.staff-btn.st-in{border-color:var(--success);background:var(--success-soft);box-shadow:0 0 0 3px rgb(72 115 84 / 16%),var(--shadow-sm)}.staff-btn.st-in .name{color:var(--success)}.staff-btn.st-in .status{background:var(--success);color:#fff}.staff-btn.st-out{border-color:#9b998f}.staff-btn.st-out .status{background:var(--success-soft);color:var(--success)}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}table.data{width:100%;border-collapse:collapse;font-size:.9rem}table.data th,table.data td{padding:10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}table.data th{font-size:.79rem;color:var(--muted);font-weight:800}table.data tr:last-child td{border-bottom:0}table.data tbody tr[data-id]{cursor:pointer}table.data tbody tr[data-id]:hover{background:var(--primary-soft)}
+.pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:.78rem;font-weight:900}.pill.st-none{background:#efeae4;color:var(--muted)}.pill.st-in{background:var(--success);color:#fff}.pill.st-out{background:var(--success-soft);color:var(--success)}.pill.st-auto{background:var(--warning-soft);color:var(--warning)}.total-row td{font-weight:900;background:var(--primary-soft)}
+.field{margin-bottom:13px}.field label{display:block;font-size:.84rem;font-weight:800;color:var(--muted);margin-bottom:6px}.field input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:1rem;background:#fff;color:var(--ink);min-height:44px}.field-row{display:flex;gap:13px;flex-wrap:wrap}.field-row .field{flex:1;min-width:145px}
+.staff-row{display:flex;align-items:center;gap:8px;padding:8px 3px;border-bottom:1px solid var(--line)}.staff-row:last-child{border-bottom:0}.staff-row .staff-name{flex:1;font-weight:800}.icon-btn{appearance:none;border:1px solid var(--line);background:#fff;border-radius:8px;width:40px;height:40px;font-weight:900;cursor:pointer;color:var(--muted)}
+.banner{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:13px 14px;border-radius:11px;margin-bottom:13px;font-size:.9rem;line-height:1.6}.banner.warning{background:var(--warning-soft);border:1px solid #eadfc5;color:var(--warning)}.banner.success{background:var(--success-soft);border:1px solid #d7e6da;color:var(--success)}.banner.info{background:var(--info-soft);border:1px solid #d4e4ee;color:var(--info)}.banner strong{display:block;margin-bottom:3px}
+.modal-overlay{position:fixed;inset:0;background:rgb(47 42 39 / 48%);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}.modal-overlay.is-open{display:flex}.modal{background:var(--surface);border-radius:var(--radius-lg);padding:22px;max-width:430px;width:100%;max-height:min(90vh,720px);overflow:auto;box-shadow:var(--shadow-md)}.modal h3{margin:0 0 10px;font-size:1.16rem}.modal p{margin:0 0 18px;color:var(--muted);line-height:1.65}.modal .btn-row{justify-content:flex-end}
+.pin-box{text-align:center}.pin-box input{width:180px;text-align:center;font-size:1.8rem;letter-spacing:.28em;font-weight:900;margin:8px auto 4px}.pin-hint{font-size:.82rem;color:var(--muted);line-height:1.6}.pin-message{min-height:1.4em;color:var(--danger);font-weight:800;font-size:.85rem;margin:5px 0 8px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,12px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:999px;font-size:.9rem;font-weight:800;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:.22s ease;z-index:200;max-width:90vw;text-align:center}.toast.is-visible{opacity:1;transform:translate(-50%,0)}
+.empty-note{color:var(--muted);font-size:.9rem;padding:12px 3px}.small{font-size:.8rem;color:var(--muted)}
+@media(max-width:720px){.app{padding:8px 10px 48px}.top-bar{border-radius:13px;padding:11px 13px}.top-bar .clock{font-size:1.55rem}.tabs{margin-left:-2px;margin-right:-2px}.tab-btn{padding:10px 13px}.card{padding:14px;border-radius:14px}.staff-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.staff-btn{min-height:122px;padding:13px 12px}.staff-btn .name{font-size:1.05rem}.staff-btn .times,.staff-btn .ot{font-size:.78rem}.field-row .field{min-width:130px}}
+@media(max-width:430px){.staff-grid{grid-template-columns:1fr 1fr}.staff-btn{min-height:116px}.btn{padding-left:13px;padding-right:13px}}
 </style>
 </head>
 <body class="app">
-
-<div class="top-bar">
-  <div class="date" id="topDate">-</div>
-  <div class="clock" id="topClock">--:--</div>
-</div>
-
-<nav class="tabs" id="tabs">
+<header class="top-bar"><div class="date" id="topDate">-</div><div class="clock" id="topClock">--:--</div></header>
+<nav class="tabs" id="tabs" aria-label="画面切り替え">
   <button class="tab-btn" data-screen="punch">打刻</button>
   <button class="tab-btn" data-screen="history">勤務記録</button>
   <button class="tab-btn" data-screen="summary">月別集計</button>
   <button class="tab-btn" data-screen="settings">設定</button>
 </nav>
 
-<!-- ============ 打刻画面 ============ -->
 <section id="screen-punch">
-  <div class="card">
-    <h2>名前をタップしてください</h2>
-    <p class="section-note">出勤：1回タップで記録されます。退勤：もう一度タップすると確認画面が出ます。</p>
-    <div class="staff-grid" id="staffGrid"></div>
-  </div>
-  <div class="card">
-    <h2>今日の勤務状況</h2><p class="section-note">行をタップすると、出勤・退勤時刻を修正できます。</p>
-    <div class="table-wrap">
-      <table class="data" id="todayTable">
-        <thead><tr><th>職員</th><th>状態</th><th>出勤</th><th>退勤</th><th>時間外</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+  <div class="card"><h2>職員名をタップ</h2><p class="section-note">出勤は1回、退勤はもう1回。退勤時は確認してから記録します。</p><div class="staff-grid" id="staffGrid"></div></div>
+  <div class="card"><h2>今日の勤務状況</h2><p class="section-note">行をタップすると、その日の記録を修正できます。</p><div class="table-wrap"><table class="data" id="todayTable"><thead><tr><th>職員</th><th>状態</th><th>出勤</th><th>退勤</th><th>時間外</th></tr></thead><tbody></tbody></table></div></div>
 </section>
 
-<!-- ============ 勤務記録画面 ============ -->
 <section id="screen-history" hidden>
-  <div class="card">
-    <h2>勤務記録</h2>
-    <div class="field-row" style="align-items:flex-end">
-      <div class="field" style="max-width:220px">
-        <label for="historyDate">日付</label>
-        <input type="date" id="historyDate">
-      </div>
-      <div class="btn-row" style="margin-bottom:14px">
-        <button class="btn btn-secondary" id="historyPrev">← 前日</button>
-        <button class="btn btn-secondary" id="historyToday">今日</button>
-        <button class="btn btn-secondary" id="historyNext">翌日 →</button>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table class="data" id="historyTable">
-        <thead><tr><th>職員</th><th>状態</th><th>出勤</th><th>退勤</th><th>勤務時間</th><th>時間外</th><th>早出</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <p class="section-note" style="margin-top:12px">行をタップすると、その職員のその日の記録を修正できます。</p>
-  </div>
+  <div class="card"><h2 id="historyTitle">勤務記録</h2><div class="field-row" style="align-items:flex-end"><div class="field" style="max-width:220px"><label for="historyDate">日付</label><input type="date" id="historyDate"></div><div class="btn-row" style="margin-bottom:13px"><button class="btn btn-secondary" id="historyPrev">← 前日</button><button class="btn btn-secondary" id="historyToday">今日</button><button class="btn btn-secondary" id="historyNext">翌日 →</button></div></div><div class="table-wrap"><table class="data" id="historyTable"><thead><tr><th>職員</th><th>状態</th><th>出勤</th><th>退勤</th><th>勤務時間</th><th>時間外</th><th>早出</th></tr></thead><tbody></tbody></table></div><p class="section-note" style="margin-top:12px;margin-bottom:0">過去日の記録も修正できます。記録した日の勤務設定を使って再計算します。</p></div>
 </section>
 
-<!-- ============ 月別集計画面 ============ -->
 <section id="screen-summary" hidden>
-  <div class="card">
-    <h2>月別集計</h2>
-    <div class="field-row" style="align-items:flex-end">
-      <div class="field" style="max-width:200px">
-        <label for="summaryMonth">対象月</label>
-        <input type="month" id="summaryMonth">
-      </div>
-      <div class="btn-row" style="margin-bottom:14px">
-        <button class="btn btn-secondary" id="csvExportBtn">CSVで書き出す</button>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table class="data" id="summaryTable">
-        <thead><tr>
-          <th>職員</th><th>勤務日数</th><th>総勤務時間</th><th>総時間外勤務</th>
-          <th>早出時間</th><th>平均出勤</th><th>平均退勤</th>
-        </tr></thead>
-        <tbody></tbody>
-        <tfoot></tfoot>
-      </table>
-    </div>
-  </div>
+  <div class="card"><h2 id="summaryTitle">月別集計</h2><div class="field-row" style="align-items:flex-end"><div class="field" style="max-width:200px"><label for="summaryMonth">対象月</label><input type="month" id="summaryMonth"></div><div class="btn-row" style="margin-bottom:13px"><button class="btn btn-secondary" id="csvExportBtn">CSVで書き出す</button></div></div><div class="table-wrap"><table class="data" id="summaryTable"><thead><tr><th>職員</th><th>勤務日数</th><th>総勤務時間</th><th>総時間外</th><th>早出時間</th><th>平均出勤</th><th>平均退勤</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div></div>
 </section>
 
-<!-- ============ 設定画面 ============ -->
 <section id="screen-settings" hidden>
-  <div class="card">
-    <h2>勤務時間の設定</h2>
-    <div class="field-row">
-      <div class="field">
-        <label for="setStart">勤務開始</label>
-        <input type="time" id="setStart">
-      </div>
-      <div class="field">
-        <label for="setEnd">勤務終了</label>
-        <input type="time" id="setEnd">
-      </div>
-      <div class="field">
-        <label for="setBreak">休憩時間（分）</label>
-        <input type="number" id="setBreak" min="0" step="5">
-      </div>
-      <div class="field">
-        <label for="setAutoOut">退勤忘れの自動退勤</label>
-        <input type="time" id="setAutoOut" aria-describedby="autoOutNote">
-        <p class="section-note" id="autoOutNote" style="margin-top:6px">指定時刻になったら、退勤記録のない「出勤中」の職員をその時刻で自動的に退勤にします。</p>
-      </div>
-    </div>
-    <button class="btn btn-primary" id="saveSettingsBtn">設定を保存</button>
-  </div>
-
-  <div class="card">
-    <h2>職員名簿</h2>
-    <div id="staffList"></div>
-    <div class="field-row" style="margin-top:12px;align-items:flex-end">
-      <div class="field" style="flex:2;margin-bottom:0">
-        <label for="newStaffName">職員を追加</label>
-        <input type="text" id="newStaffName" placeholder="例：田中先生">
-      </div>
-      <button class="btn btn-secondary" id="addStaffBtn" style="margin-bottom:0">追加する</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>バックアップ・復元</h2>
-    <div class="backup-info" id="backupInfo"></div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" id="backupBtn">バックアップを保存</button>
-      <label class="btn btn-secondary" for="restoreFile" style="display:inline-flex;align-items:center;cursor:pointer">
-        バックアップから復元
-      </label>
-      <input type="file" id="restoreFile" accept="application/json" style="display:none">
-    </div>
-    <p class="section-note" style="margin-top:12px">
-      勤務データは端末内にのみ保存され、外部サーバーには送信されません。時々「バックアップを保存」しておくと安心です。
-    </p>
-  </div>
+  <div id="defaultPinBanner" class="banner warning"><div><strong>初期PINは「0000」です。</strong>安全のため、設定を使い始めたらPINを変更してください。</div></div>
+  <div id="changedPinBanner" class="banner success" hidden><div><strong>設定PINは変更されています。</strong>設定画面へのアクセスは変更後のPINで保護されています。</div></div>
+  <div class="card"><h2>勤務時間の設定</h2><p class="section-note">ここで変更した勤務時間は「これから記録する日」に適用されます。過去日の記録は、その日に保存した設定で計算します。</p><div class="field-row"><div class="field"><label for="setStart">勤務開始</label><input type="time" id="setStart"></div><div class="field"><label for="setEnd">勤務終了</label><input type="time" id="setEnd"></div><div class="field"><label for="setBreak">休憩時間（分）</label><input type="number" id="setBreak" min="0" max="600" step="5"></div><div class="field"><label for="setAutoOut">退勤忘れチェック時刻</label><input type="time" id="setAutoOut"><div class="small">この時刻を過ぎても出勤中なら、その日の記録を自動退勤にします。翌日以降に開いた場合も確認します。</div></div></div><button class="btn btn-primary" id="saveSettingsBtn">設定を保存</button></div>
+  <div class="card"><h2>設定PIN</h2><p class="section-note">設定画面を開くための4桁PINです。PINはこの端末にのみ保存し、バックアップファイルには含めません。</p><div class="field-row"><div class="field"><label for="newPin">新しいPIN</label><input type="password" id="newPin" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="4桁"></div><div class="field"><label for="newPinConfirm">新しいPIN（確認）</label><input type="password" id="newPinConfirm" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="もう一度入力"></div></div><button class="btn btn-secondary" id="changePinBtn">PINを変更する</button></div>
+  <div class="card"><h2>職員名簿</h2><div id="staffList"></div><div class="field-row" style="margin-top:12px;align-items:flex-end"><div class="field" style="flex:2;margin-bottom:0"><label for="newStaffName">職員を追加</label><input type="text" id="newStaffName" placeholder="例：田中先生"></div><button class="btn btn-secondary" id="addStaffBtn" style="margin-bottom:0">追加する</button></div></div>
+  <div class="card"><h2>バックアップ・復元</h2><div id="backupInfo" class="banner warning"></div><div class="btn-row"><button class="btn btn-secondary" id="backupBtn">バックアップを保存</button><label class="btn btn-secondary" for="restoreFile" style="display:inline-flex;align-items:center;cursor:pointer">バックアップから復元</label><input type="file" id="restoreFile" accept="application/json" hidden></div><p class="section-note" style="margin:12px 0 0">勤務データはこの端末内に保存され、外部サーバーには送信されません。バックアップファイルには職員名と勤務記録が含まれるため、取扱いには注意してください。PINはバックアップされません。</p></div>
 </section>
 
-<!-- ============ 汎用モーダル ============ -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <h3 id="modalTitle"></h3>
-    <p id="modalBody"></p>
-    <div class="btn-row">
-      <button class="btn btn-secondary" id="modalCancelBtn"></button>
-      <button class="btn btn-primary" id="modalConfirmBtn"></button>
-    </div>
-  </div>
-</div>
-
-<!-- ============ 退勤/出勤の修正モーダル ============ -->
-<div class="modal-overlay" id="editOverlay">
-  <div class="modal">
-    <h3 id="editTitle">記録の修正</h3>
-    <div class="field">
-      <label for="editIn">出勤時刻</label>
-      <input type="time" id="editIn">
-    </div>
-    <div class="field">
-      <label for="editOut">退勤時刻</label>
-      <input type="time" id="editOut">
-    </div>
-    <div class="btn-row" style="justify-content:space-between">
-      <button class="btn btn-danger btn-sm" id="editClearBtn">この日の記録を削除</button>
-      <div class="btn-row">
-        <button class="btn btn-secondary" id="editCancelBtn">キャンセル</button>
-        <button class="btn btn-primary" id="editSaveBtn">保存する</button>
-      </div>
-    </div>
-  </div>
-</div>
-
+<div class="modal-overlay" id="pinOverlay"><div class="modal pin-box"><h3>設定を開く</h3><p>設定PINを入力してください。</p><input id="pinInput" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off" aria-label="設定PIN"><div class="pin-message" id="pinMessage"></div><div class="btn-row" style="justify-content:center"><button class="btn btn-secondary" id="pinCancelBtn">キャンセル</button><button class="btn btn-primary" id="pinConfirmBtn">設定を開く</button></div><div class="pin-hint" id="pinHint"></div></div></div>
+<div class="modal-overlay" id="modalOverlay"><div class="modal"><h3 id="modalTitle"></h3><p id="modalBody"></p><div class="btn-row"><button class="btn btn-secondary" id="modalCancelBtn"></button><button class="btn btn-primary" id="modalConfirmBtn"></button></div></div></div>
+<div class="modal-overlay" id="editOverlay"><div class="modal"><h3 id="editTitle">記録の修正</h3><div class="field"><label for="editIn">出勤時刻</label><input type="time" id="editIn"></div><div class="field"><label for="editOut">退勤時刻</label><input type="time" id="editOut"></div><p class="small" id="editNote"></p><div class="btn-row" style="justify-content:space-between"><button class="btn btn-danger btn-sm" id="editClearBtn">この日の記録を削除</button><div class="btn-row"><button class="btn btn-secondary" id="editCancelBtn">キャンセル</button><button class="btn btn-primary" id="editSaveBtn">保存する</button></div></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   edu-kit (https://github.com/TT-sensei/edu-kit) の共通基盤より、
-   ロジック担当 edu-components から StorageManager / ScreenManager /
-   EDU_EVENTS を採用（このアプリはオフライン単一HTML運用のため、
-   実装をそのまま同梱しています）。
-   出典:
-   https://github.com/TT-sensei/edu-components/blob/main/js/core/events.js
-   https://github.com/TT-sensei/edu-components/blob/main/js/storage-manager.js
-   https://github.com/TT-sensei/edu-components/blob/main/js/screen-manager.js
+/* TT-sensei / edu-kit 系の考え方に合わせた、単一HTML・外部依存なしの学校向け勤務管理アプリ */
+const DEFAULT_SETTINGS={start:'08:15',end:'16:45',breakMin:45,autoOut:'17:00'};
+const DEFAULT_PIN='0000';
+const storePrefix='edu:kinmu-kanri:';
+const memoryStore=new Map();
+function getStorage(){try{const s=globalThis.localStorage;if(!s)return null;const k=storePrefix+'probe';s.setItem(k,'1');s.removeItem(k);return s}catch{return null}}
+const browserStorage=getStorage();
+function load(key,fallback){const k=storePrefix+key;let raw=null;try{raw=browserStorage?.getItem(k)??null}catch{}if(raw===null)raw=memoryStore.get(k)??null;if(raw===null)return fallback;try{return JSON.parse(raw)}catch{return fallback}}
+function save(key,value){const k=storePrefix+key,raw=JSON.stringify(value);try{if(browserStorage)browserStorage.setItem(k,raw);else throw new Error('storage')}catch{memoryStore.set(k,raw)}}
 
-   バッジ・ナビキャラクター・効果音などedu-kitのその他の基盤は、
-   子ども向け学習教材を主目的に設計されているため、職員向けの
-   本アプリでは採用していません。
-   ============================================================ */
+const state={
+  staff:load('staff',[]),
+  settings:normalizeSettings(load('settings',DEFAULT_SETTINGS)),
+  records:load('records',{}),
+  lastBackup:load('lastBackup',null),
+  pin:load('pin',DEFAULT_PIN)
+};
+function normalizeSettings(v){const x={...DEFAULT_SETTINGS,...(v||{})};return {start:x.start||DEFAULT_SETTINGS.start,end:x.end||DEFAULT_SETTINGS.end,breakMin:Number.isFinite(Number(x.breakMin))?Number(x.breakMin):DEFAULT_SETTINGS.breakMin,autoOut:x.autoOut||DEFAULT_SETTINGS.autoOut}}
+function saveAll(){save('staff',state.staff);save('settings',state.settings);save('records',state.records);save('lastBackup',state.lastBackup);save('pin',state.pin)}
+function pad(n){return String(n).padStart(2,'0')}
+function dateKey(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function monthKey(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}`}
+function nowHM(d=new Date()){return `${pad(d.getHours())}:${pad(d.getMinutes())}`}
+function toMinutes(hm){if(!hm||typeof hm!=='string')return null;const [h,m]=hm.split(':').map(Number);if(!Number.isFinite(h)||!Number.isFinite(m))return null;return h*60+m}
+function fmtMinutes(min){if(min===null||min===undefined||Number.isNaN(min))return '-';const v=Math.max(0,Math.round(min)),h=Math.floor(v/60),m=v%60;return h?`${h}時間${m}分`:`${m}分`}
+function fmtDateLabel(d){const w=['日','月','火','水','木','金','土'][d.getDay()];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w}）`}
+function fmtMonthLabel(ym){const [y,m]=ym.split('-');return `${y}年${Number(m)}月`}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function csvCell(v){const s=String(v??'');return /[",\r\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500)}
 
-const EDU_EVENTS = Object.freeze({
-  SCREEN_CHANGE: 'edu:screenchange',
-  STORAGE_SAVE: 'edu:storagesave',
-  STORAGE_REMOVE: 'edu:storageremove',
-  STORAGE_CLEAR: 'edu:storageclear',
-  STORAGE_ERROR: 'edu:storageerror'
-});
-function resolveEventTarget(target){
-  if (target && typeof target.dispatchEvent === 'function') return target;
-  if (typeof document !== 'undefined') return document;
-  return new EventTarget();
+function normalizeRecord(rec){
+  if(!rec)return {in:null,out:null,workSettings:null,autoCheckout:false};
+  return {in:rec.in||null,out:rec.out||null,workSettings:rec.workSettings||null,autoCheckout:!!rec.autoCheckout};
 }
-function emit(target, name, detail = {}){
-  resolveEventTarget(target).dispatchEvent(new CustomEvent(name, { detail }));
-}
+function currentWorkSettings(){return {...state.settings}}
+function recordFor(dateStr,staffId){const raw=state.records[dateStr]?.[staffId];return normalizeRecord(raw)}
+function effectiveWorkSettings(rec){return normalizeSettings(rec.workSettings||state.settings)}
+function putRecord(dateStr,staffId,rec){if(!state.records[dateStr])state.records[dateStr]={};if(!rec.in&&!rec.out){delete state.records[dateStr][staffId];if(!Object.keys(state.records[dateStr]).length)delete state.records[dateStr]}else{state.records[dateStr][staffId]=normalizeRecord(rec)}save('records',state.records)}
+function computeDay(dateStr,rec){const settings=effectiveWorkSettings(rec),startM=toMinutes(settings.start),endM=toMinutes(settings.end),inM=toMinutes(rec.in),outM=toMinutes(rec.out);const status=rec.out?'out':rec.in?'in':'none';let workMin=null,otMin=null,earlyMin=null,lateMin=0;if(inM!==null){earlyMin=Math.max(0,(startM??0)-inM)}if(inM!==null&&outM!==null){workMin=Math.max(0,(outM-inM)-settings.breakMin);lateMin=Math.max(0,(outM-(endM??0)));otMin=earlyMin+lateMin}return {status,workMin,otMin,earlyMin,lateMin,settings}}
+function statusLabel(status,autoCheckout=false){if(autoCheckout)return '自動退勤';return status==='in'?'出勤中':status==='out'?'退勤済み':'未出勤'}
 
-const memoryStore = new Map();
-function getBrowserStorage(){
-  try{
-    if (typeof globalThis === 'undefined' || !globalThis.localStorage) return null;
-    const probe = `edu:storage-probe:${Math.random().toString(36).slice(2)}`;
-    globalThis.localStorage.setItem(probe, '1');
-    globalThis.localStorage.removeItem(probe);
-    return globalThis.localStorage;
-  }catch{ return null; }
-}
-class StorageManager{
-  constructor(namespace, options = {}){
-    if (typeof namespace !== 'string' || !namespace.trim()) throw new Error('StorageManager requires a namespace.');
-    this.namespace = namespace.trim();
-    this.prefix = `edu:${this.namespace}:`;
-    this.eventTarget = options.eventTarget;
-    this.storage = options.storage === undefined ? getBrowserStorage() : options.storage;
-  }
-  _key(key){
-    if (typeof key !== 'string' || !key.trim()) throw new Error('StorageManager key must be a non-empty string.');
-    return `${this.prefix}${key}`;
-  }
-  _error(operation, key, error, fallback = true){
-    emit(this.eventTarget, EDU_EVENTS.STORAGE_ERROR, { operation, namespace:this.namespace, key, message: error?.message || String(error), fallback });
-  }
-  save(key, value){
-    const storageKey = this._key(key);
-    let raw;
-    try{ raw = JSON.stringify(value); if (raw === undefined) throw new Error('Unsupported value: undefined.'); }
-    catch(error){ this._error('save', key, error, false); return false; }
-    try{
-      if (this.storage) this.storage.setItem(storageKey, raw);
-      else throw new Error('localStorage is unavailable.');
-    }catch(error){
-      memoryStore.set(storageKey, raw);
-      this._error('save', key, error, true);
-    }
-    emit(this.eventTarget, EDU_EVENTS.STORAGE_SAVE, { namespace:this.namespace, key, storageKey, value });
-    return true;
-  }
-  load(key, defaultValue = null){
-    const storageKey = this._key(key);
-    let raw = null;
-    try{ raw = this.storage?.getItem(storageKey) ?? null; }
-    catch(error){ this._error('load', key, error, true); }
-    if (raw === null) raw = memoryStore.get(storageKey) ?? null;
-    if (raw === null) return defaultValue;
-    try{ return JSON.parse(raw); }
-    catch(error){ this._error('load', key, error, true); return defaultValue; }
-  }
-}
-class ScreenManager{
-  constructor(options = {}){
-    this.screens = new Map();
-    this.currentScreen = null;
-    this.eventTarget = options.eventTarget;
-    (options.screens || []).forEach((screen) => this.register(screen));
-  }
-  register(screenOrId, element){
-    const id = typeof screenOrId === 'string' ? screenOrId : screenOrId?.id;
-    const node = typeof screenOrId === 'string' ? element : screenOrId?.element;
-    if (!id || !node) throw new Error('ScreenManager.register requires an id and an element.');
-    this.screens.set(id, node);
-    node.hidden = true;
-    return this;
-  }
-  show(id){
-    if (!this.screens.has(id)) throw new Error(`Unknown screen: ${id}`);
-    const previous = this.currentScreen;
-    this.screens.forEach((node, screenId) => { node.hidden = screenId !== id; });
-    this.currentScreen = id;
-    emit(this.eventTarget, EDU_EVENTS.SCREEN_CHANGE, { from: previous, to: id });
-    return this;
-  }
-  getCurrent(){ return this.currentScreen; }
-}
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('is-visible');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.remove('is-visible'),2600)}
+function confirmDialog({title,body,confirmLabel='OK',cancelLabel='キャンセル',danger=false}){return new Promise(resolve=>{const ov=document.getElementById('modalOverlay'),yes=document.getElementById('modalConfirmBtn'),no=document.getElementById('modalCancelBtn');document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').textContent=body;yes.textContent=confirmLabel;no.textContent=cancelLabel;yes.className='btn '+(danger?'btn-danger':'btn-primary');no.className='btn btn-secondary';ov.classList.add('is-open');const done=v=>{ov.classList.remove('is-open');yes.removeEventListener('click',onYes);no.removeEventListener('click',onNo);resolve(v)};const onYes=()=>done(true),onNo=()=>done(false);yes.addEventListener('click',onYes);no.addEventListener('click',onNo)})}
+function infoDialog({title,body,confirmLabel='OK'}){return new Promise(resolve=>{const ov=document.getElementById('modalOverlay'),yes=document.getElementById('modalConfirmBtn'),no=document.getElementById('modalCancelBtn');document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=body;yes.textContent=confirmLabel;yes.className='btn btn-primary btn-block';no.style.display='none';ov.classList.add('is-open');const done=()=>{ov.classList.remove('is-open');no.style.display='';yes.removeEventListener('click',done);resolve()};yes.addEventListener('click',done)})}
 
-/* ============================================================
-   アプリ本体
-   ============================================================ */
-const store = new StorageManager('kinmu-kanri');
+const screenNodes={punch:document.getElementById('screen-punch'),history:document.getElementById('screen-history'),summary:document.getElementById('screen-summary'),settings:document.getElementById('screen-settings')};
+let currentScreen='punch';let settingsUnlocked=false;
+function showScreen(id){Object.entries(screenNodes).forEach(([k,node])=>node.hidden=k!==id);document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('is-active',b.dataset.screen===id));currentScreen=id;if(id==='punch')renderPunchScreen();if(id==='history')renderHistoryScreen();if(id==='summary')renderSummaryScreen();if(id==='settings')renderSettingsScreen()}
 
-const DEFAULT_SETTINGS = { start:'08:15', end:'16:45', breakMin:45, autoOut:'17:00' };
-const DEFAULT_STAFF = [];
+document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab-btn');if(!b)return;const id=b.dataset.screen;if(id==='settings'&&!settingsUnlocked){openPinDialog();return}showScreen(id)});
 
-function loadState(){
-  return {
-    staff: store.load('staff', DEFAULT_STAFF),
-    settings: store.load('settings', DEFAULT_SETTINGS),
-    records: store.load('records', {}),
-    lastBackup: store.load('lastBackup', null)
-  };
-}
-const state = loadState();
+function openPinDialog(){const ov=document.getElementById('pinOverlay'),input=document.getElementById('pinInput'),msg=document.getElementById('pinMessage'),hint=document.getElementById('pinHint');input.value='';msg.textContent='';hint.textContent=state.pin===DEFAULT_PIN?'初期PINは「0000」です。設定画面で変更できます。':'PINを4桁で入力してください。';ov.classList.add('is-open');setTimeout(()=>input.focus(),80)}
+function closePinDialog(){document.getElementById('pinOverlay').classList.remove('is-open')}
+document.getElementById('pinCancelBtn').addEventListener('click',closePinDialog);
+document.getElementById('pinConfirmBtn').addEventListener('click',unlockSettings);
+document.getElementById('pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')unlockSettings()});
+function unlockSettings(){const input=document.getElementById('pinInput'),msg=document.getElementById('pinMessage'),v=input.value.trim();if(!/^\d{4}$/.test(v)){msg.textContent='4桁の数字を入力してください。';return}if(v!==state.pin){msg.textContent='PINが違います。';input.select();return}settingsUnlocked=true;closePinDialog();showScreen('settings')}
 
-function saveStaff(){ store.save('staff', state.staff); }
-function saveSettings(){ store.save('settings', state.settings); }
-function saveRecords(){ store.save('records', state.records); }
-function saveLastBackup(iso){ state.lastBackup = iso; store.save('lastBackup', iso); }
+async function handlePunch(staffId,name){const key=dateKey(new Date()),rec=recordFor(key,staffId);if(!rec.in){rec.in=nowHM();rec.out=null;rec.workSettings=currentWorkSettings();rec.autoCheckout=false;putRecord(key,staffId,rec);showToast(`${name}　出勤しました（${rec.in}）`);renderPunchScreen();return}if(rec.in&&!rec.out){const ok=await confirmDialog({title:`${name}を退勤にしますか？`,body:`出勤 ${rec.in} からの記録を確定します。`,confirmLabel:'退勤する',cancelLabel:'やめる'});if(!ok)return;rec.out=nowHM();putRecord(key,staffId,rec);const c=computeDay(key,rec),monthOt=monthlyOvertimeForStaff(staffId,monthKey(new Date()));renderPunchScreen();await infoDialog({title:`${name}　退勤しました`,body:`<div style="text-align:center;line-height:1.7"><div style="font-size:.9rem;color:var(--muted)">出勤 ${rec.in} ／ 退勤 ${rec.out}</div><div style="margin-top:12px;color:var(--muted)">今日の時間外</div><div style="font-size:2rem;font-weight:900;color:var(--primary-dark)">${fmtMinutes(c.otMin)}</div><div style="margin-top:8px;color:var(--muted)">今月の時間外</div><div style="font-size:2.2rem;font-weight:900;color:var(--success)">${fmtMinutes(monthOt)}</div></div>`});return}openEditModal(staffId,name,key)}
+function renderPunchScreen(){const key=dateKey(new Date()),ym=monthKey(new Date()),grid=document.getElementById('staffGrid');if(!state.staff.length){grid.innerHTML='<p class="empty-note">「設定」から職員を追加してください。</p>'}else{grid.innerHTML=state.staff.map(s=>{const rec=recordFor(key,s.id),c=computeDay(key,rec),times=rec.in?`出勤 ${rec.in}${rec.out?`　退勤 ${rec.out}`:''}`:'まだ記録なし';return `<button class="staff-btn st-${c.status}" data-id="${escapeHtml(s.id)}" data-name="${escapeHtml(s.name)}"><span class="name">${escapeHtml(s.name)}</span><span class="status">${statusLabel(c.status,rec.autoCheckout)}</span><span class="times">${times}</span><span class="ot">今月の時間外：${fmtMinutes(monthlyOvertimeForStaff(s.id,ym))}</span></button>`}).join('');grid.querySelectorAll('.staff-btn').forEach(b=>b.addEventListener('click',()=>handlePunch(b.dataset.id,b.dataset.name)))}renderTodayTable(key)}
+function renderTodayTable(key){const tbody=document.querySelector('#todayTable tbody');if(!state.staff.length){tbody.innerHTML='<tr><td colspan="5" class="empty-note">職員が登録されていません</td></tr>';return}tbody.innerHTML=state.staff.map(s=>{const rec=recordFor(key,s.id),c=computeDay(key,rec);return `<tr data-id="${escapeHtml(s.id)}" data-name="${escapeHtml(s.name)}"><td>${escapeHtml(s.name)}</td><td><span class="pill st-${rec.autoCheckout?'auto':c.status}">${statusLabel(c.status,rec.autoCheckout)}</span></td><td>${rec.in||'-'}</td><td>${rec.out?`${rec.out}${rec.autoCheckout?'（自動）':''}`:'-'}</td><td>${rec.out?fmtMinutes(c.otMin):'-'}</td></tr>`}).join('');tbody.querySelectorAll('tr[data-id]').forEach(r=>r.addEventListener('click',()=>openEditModal(r.dataset.id,r.dataset.name,key)))}
 
-/* ---- 日付・時刻ユーティリティ ---- */
-function pad(n){ return String(n).padStart(2,'0'); }
-function dateKey(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-function monthKey(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; }
-function nowHM(d = new Date()){ return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
-function toMinutes(hm){ if(!hm) return null; const [h,m] = hm.split(':').map(Number); return h*60+m; }
-function fmtMinutes(min){
-  if (min === null || min === undefined || isNaN(min)) return '-';
-  const clipped = Math.max(0, Math.round(min));
-  const h = Math.floor(clipped/60), m = clipped%60;
-  return h>0 ? `${h}時間${m}分` : `${m}分`;
-}
-function fmtDateLabel(d){
-  const w = ['日','月','火','水','木','金','土'][d.getDay()];
-  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w}）`;
-}
-function fmtMonthLabel(ym){
-  const [y,m] = ym.split('-');
-  return `${y}年${Number(m)}月`;
-}
+let historyDate=new Date();
+function renderHistoryScreen(){const input=document.getElementById('historyDate');input.value=dateKey(historyDate);const key=dateKey(historyDate);document.getElementById('historyTitle').textContent=`勤務記録　${fmtDateLabel(historyDate)}`;const tbody=document.querySelector('#historyTable tbody');if(!state.staff.length){tbody.innerHTML='<tr><td colspan="7" class="empty-note">職員が登録されていません</td></tr>';return}tbody.innerHTML=state.staff.map(s=>{const rec=recordFor(key,s.id),c=computeDay(key,rec);return `<tr data-id="${escapeHtml(s.id)}" data-name="${escapeHtml(s.name)}"><td>${escapeHtml(s.name)}</td><td><span class="pill st-${rec.autoCheckout?'auto':c.status}">${statusLabel(c.status,rec.autoCheckout)}</span></td><td>${rec.in||'-'}</td><td>${rec.out?`${rec.out}${rec.autoCheckout?'（自動）':''}`:'-'}</td><td>${rec.out?fmtMinutes(c.workMin):'-'}</td><td>${rec.out?fmtMinutes(c.otMin):'-'}</td><td>${rec.in?fmtMinutes(c.earlyMin):'-'}</td></tr>`}).join('');tbody.querySelectorAll('tr[data-id]').forEach(r=>r.addEventListener('click',()=>openEditModal(r.dataset.id,r.dataset.name,key)))}
+document.getElementById('historyDate').addEventListener('change',e=>{if(e.target.value){historyDate=new Date(e.target.value+'T00:00:00');renderHistoryScreen()}});
+document.getElementById('historyPrev').addEventListener('click',()=>{historyDate.setDate(historyDate.getDate()-1);renderHistoryScreen()});document.getElementById('historyNext').addEventListener('click',()=>{historyDate.setDate(historyDate.getDate()+1);renderHistoryScreen()});document.getElementById('historyToday').addEventListener('click',()=>{historyDate=new Date();renderHistoryScreen()});
 
-/* ---- 勤務計算 ---- */
-function getRecord(dateStr, staffId){
-  return (state.records[dateStr] && state.records[dateStr][staffId]) || { in:null, out:null };
-}
-function setRecord(dateStr, staffId, rec){
-  if (!state.records[dateStr]) state.records[dateStr] = {};
-  if (rec.in === null && rec.out === null){
-    delete state.records[dateStr][staffId];
-    if (Object.keys(state.records[dateStr]).length === 0) delete state.records[dateStr];
-  } else {
-    state.records[dateStr][staffId] = rec;
-  }
-  saveRecords();
-}
-function computeDay(rec){
-  const startM = toMinutes(state.settings.start);
-  const endM = toMinutes(state.settings.end);
-  const inM = toMinutes(rec.in);
-  const outM = toMinutes(rec.out);
-  const status = rec.out ? 'out' : (rec.in ? 'in' : 'none');
-  let workMin = null, otMin = null, earlyMin = null;
-  if (inM !== null){
-    earlyMin = Math.max(0, startM - inM);
-  }
-  if (inM !== null && outM !== null){
-    workMin = Math.max(0, (outM - inM) - (state.settings.breakMin || 0));
-    const lateMin = Math.max(0, outM - endM);
-    // 時間外勤務は「勤務開始前の早出＋勤務終了後の残業」。
-    otMin = earlyMin + lateMin;
-  }
-  return { status, workMin, otMin, earlyMin };
-}
-function statusLabel(status){
-  return status === 'in' ? '出勤中' : status === 'out' ? '退勤済み' : '未出勤';
-}
+let editContext=null;
+function openEditModal(staffId,name,dateStr){editContext={staffId,dateStr};const rec=recordFor(dateStr,staffId),c=computeDay(dateStr,rec);document.getElementById('editTitle').textContent=`${name}の記録を修正（${dateStr}）`;document.getElementById('editIn').value=rec.in||'';document.getElementById('editOut').value=rec.out||'';document.getElementById('editNote').textContent=rec.workSettings?`計算設定：${c.settings.start}〜${c.settings.end}／休憩${c.settings.breakMin}分${rec.autoCheckout?'／退勤忘れの自動処理':''}`:'この記録には勤務設定が保存されていません。現在の設定を使って保存します。';document.getElementById('editOverlay').classList.add('is-open')}
+document.getElementById('editCancelBtn').addEventListener('click',()=>document.getElementById('editOverlay').classList.remove('is-open'));
+document.getElementById('editSaveBtn').addEventListener('click',async()=>{if(!editContext)return;const inVal=document.getElementById('editIn').value||null,outVal=document.getElementById('editOut').value||null;if(outVal&&!inVal){showToast('退勤時刻だけは保存できません');return}if(inVal&&outVal&&toMinutes(outVal)<toMinutes(inVal)){showToast('退勤時刻は出勤時刻以降にしてください');return}const old=recordFor(editContext.dateStr,editContext.staffId);const rec={in:inVal,out:outVal,workSettings:old.workSettings||currentWorkSettings(),autoCheckout:false};putRecord(editContext.dateStr,editContext.staffId,rec);document.getElementById('editOverlay').classList.remove('is-open');showToast('記録を修正しました');renderHistoryScreen();renderPunchScreen()});
+document.getElementById('editClearBtn').addEventListener('click',async()=>{if(!editContext)return;const ok=await confirmDialog({title:'この日の記録を削除しますか？',body:'出勤・退勤の記録が削除されます。この操作は元に戻せません。',confirmLabel:'削除する',danger:true});if(!ok)return;putRecord(editContext.dateStr,editContext.staffId,{in:null,out:null});document.getElementById('editOverlay').classList.remove('is-open');showToast('記録を削除しました');renderHistoryScreen();renderPunchScreen()});
 
-/* ---- 今月の時間外合計（個人） ---- */
-function monthlyOvertimeForStaff(staffId, ym){
-  let total = 0;
-  for (const dateStr of Object.keys(state.records)){
-    if (!dateStr.startsWith(ym)) continue;
-    const rec = state.records[dateStr][staffId];
-    if (!rec) continue;
-    const { otMin } = computeDay(rec);
-    if (otMin) total += otMin;
-  }
-  return total;
-}
+function monthlyOvertimeForStaff(staffId,ym){let total=0;for(const dateStr of Object.keys(state.records)){if(!dateStr.startsWith(ym))continue;const rec=recordFor(dateStr,staffId),c=computeDay(dateStr,rec);if(rec.in&&rec.out)total+=c.otMin||0}return total}
+function summarizeMonth(ym){return state.staff.map(s=>{let days=0,workMin=0,otMin=0,earlyMin=0;const ins=[],outs=[];for(const dateStr of Object.keys(state.records)){if(!dateStr.startsWith(ym))continue;const rec=recordFor(dateStr,s.id),c=computeDay(dateStr,rec);if(rec.in&&rec.out){days++;workMin+=c.workMin||0;otMin+=c.otMin||0;ins.push(toMinutes(rec.in));outs.push(toMinutes(rec.out))}earlyMin+=c.earlyMin||0}const avg=arr=>arr.length?`${pad(Math.floor((arr.reduce((a,b)=>a+b,0)/arr.length)/60))}:${pad(Math.round((arr.reduce((a,b)=>a+b,0)/arr.length)%60))}`:null;return {name:s.name,days,workMin,otMin,earlyMin,avgIn:avg(ins),avgOut:avg(outs)}}).filter(r=>r.days>0||r.earlyMin>0)}
+function renderSummaryScreen(){const input=document.getElementById('summaryMonth');if(!input.value)input.value=monthKey(new Date());const ym=input.value,rows=summarizeMonth(ym);document.getElementById('summaryTitle').textContent=`月別集計　${fmtMonthLabel(ym)}`;const tbody=document.querySelector('#summaryTable tbody'),tfoot=document.querySelector('#summaryTable tfoot');if(!rows.length){tbody.innerHTML='<tr><td colspan="7" class="empty-note">この月の記録はまだありません</td></tr>';tfoot.innerHTML='';return}tbody.innerHTML=rows.map(r=>`<tr><td>${escapeHtml(r.name)}</td><td>${r.days}日</td><td>${fmtMinutes(r.workMin)}</td><td>${fmtMinutes(r.otMin)}</td><td>${fmtMinutes(r.earlyMin)}</td><td>${r.avgIn||'-'}</td><td>${r.avgOut||'-'}</td></tr>`).join('');const totalWork=rows.reduce((s,r)=>s+r.workMin,0),totalOt=rows.reduce((s,r)=>s+r.otMin,0);tfoot.innerHTML=`<tr class="total-row"><td>学校全体</td><td>-</td><td>${fmtMinutes(totalWork)}</td><td>${fmtMinutes(totalOt)}</td><td>-</td><td>-</td><td>-</td></tr>`}
+document.getElementById('summaryMonth').addEventListener('change',renderSummaryScreen);
+document.getElementById('csvExportBtn').addEventListener('click',()=>{const ym=document.getElementById('summaryMonth').value||monthKey(new Date()),rows=summarizeMonth(ym),header=['職員','勤務日数','総勤務時間(分)','総時間外勤務(分)','早出時間(分)','平均出勤','平均退勤'],lines=[header.map(csvCell).join(',')];rows.forEach(r=>lines.push([r.name,r.days,r.workMin,r.otMin,r.earlyMin,r.avgIn||'',r.avgOut||''].map(csvCell).join(',')));const csv='\uFEFF'+lines.join('\r\n');downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),`勤務集計_${ym}.csv`)});
 
-/* ============================================================
-   画面切り替え
-   ============================================================ */
-const screenManager = new ScreenManager({
-  screens: [
-    { id:'punch', element: document.getElementById('screen-punch') },
-    { id:'history', element: document.getElementById('screen-history') },
-    { id:'summary', element: document.getElementById('screen-summary') },
-    { id:'settings', element: document.getElementById('screen-settings') }
-  ]
-});
-document.getElementById('tabs').addEventListener('click', (e) => {
-  const btn = e.target.closest('.tab-btn');
-  if (!btn) return;
-  showScreen(btn.dataset.screen);
-});
-function showScreen(id){
-  screenManager.show(id);
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('is-active', b.dataset.screen === id));
-  if (id === 'punch') renderPunchScreen();
-  if (id === 'history') renderHistoryScreen();
-  if (id === 'summary') renderSummaryScreen();
-  if (id === 'settings') renderSettingsScreen();
-}
+function renderSettingsScreen(){document.getElementById('setStart').value=state.settings.start;document.getElementById('setEnd').value=state.settings.end;document.getElementById('setBreak').value=state.settings.breakMin;document.getElementById('setAutoOut').value=state.settings.autoOut;document.getElementById('defaultPinBanner').hidden=state.pin!==DEFAULT_PIN;document.getElementById('changedPinBanner').hidden=state.pin===DEFAULT_PIN;renderStaffList();renderBackupInfo()}
+document.getElementById('saveSettingsBtn').addEventListener('click',()=>{const start=document.getElementById('setStart').value,end=document.getElementById('setEnd').value,breakMin=Number(document.getElementById('setBreak').value),autoOut=document.getElementById('setAutoOut').value;if(!start||!end||!autoOut||!Number.isFinite(breakMin)||breakMin<0){showToast('勤務時間・休憩・退勤忘れチェック時刻を確認してください');return}if(toMinutes(end)<=toMinutes(start)){showToast('勤務終了は勤務開始より後にしてください');return}state.settings={start,end,breakMin,autoOut};save('settings',state.settings);showToast('勤務時間の設定を保存しました');renderSettingsScreen();renderPunchScreen()});
 
-/* ============================================================
-   トースト・モーダル
-   ============================================================ */
-let toastTimer = null;
-function showToast(msg){
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('is-visible');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2600);
-}
+document.getElementById('changePinBtn').addEventListener('click',async()=>{const a=document.getElementById('newPin').value.trim(),b=document.getElementById('newPinConfirm').value.trim();if(!/^\d{4}$/.test(a)){showToast('PINは4桁の数字にしてください');return}if(a!==b){showToast('PINが一致しません');return}if(a===state.pin){showToast('現在と同じPINです');return}const ok=await confirmDialog({title:'設定PINを変更しますか？',body:'変更後は新しい4桁PINで設定画面を開きます。PINはバックアップには含まれません。',confirmLabel:'変更する'});if(!ok)return;state.pin=a;save('pin',state.pin);document.getElementById('newPin').value='';document.getElementById('newPinConfirm').value='';showToast('設定PINを変更しました');renderSettingsScreen()});
 
-function showInfoDialog({ title, body, confirmLabel = 'OK' }){
-  return new Promise((resolve) => {
-    const overlay = document.getElementById('modalOverlay');
-    const confirmBtn = document.getElementById('modalConfirmBtn');
-    const cancelBtn = document.getElementById('modalCancelBtn');
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('modalBody').innerHTML = body;
-    confirmBtn.textContent = confirmLabel;
-    confirmBtn.className = 'btn btn-primary btn-block';
-    cancelBtn.style.display = 'none';
-    overlay.classList.add('is-open');
-    function cleanup(){
-      overlay.classList.remove('is-open');
-      cancelBtn.style.display = '';
-      confirmBtn.removeEventListener('click', onConfirm);
-      resolve();
-    }
-    function onConfirm(){ cleanup(); }
-    confirmBtn.addEventListener('click', onConfirm);
-  });
-}
-function confirmDialog({ title, body, confirmLabel = 'OK', cancelLabel = 'キャンセル', danger = false }){
-  return new Promise((resolve) => {
-    const overlay = document.getElementById('modalOverlay');
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('modalBody').textContent = body;
-    const confirmBtn = document.getElementById('modalConfirmBtn');
-    const cancelBtn = document.getElementById('modalCancelBtn');
-    confirmBtn.textContent = confirmLabel;
-    cancelBtn.textContent = cancelLabel;
-    confirmBtn.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
-    overlay.classList.add('is-open');
-    function cleanup(result){
-      overlay.classList.remove('is-open');
-      confirmBtn.removeEventListener('click', onConfirm);
-      cancelBtn.removeEventListener('click', onCancel);
-      resolve(result);
-    }
-    function onConfirm(){ cleanup(true); }
-    function onCancel(){ cleanup(false); }
-    confirmBtn.addEventListener('click', onConfirm);
-    cancelBtn.addEventListener('click', onCancel);
-  });
-}
+function renderStaffList(){const list=document.getElementById('staffList');if(!state.staff.length){list.innerHTML='<p class="empty-note">まだ職員が登録されていません。下から追加してください。</p>';return}list.innerHTML=state.staff.map((s,i)=>`<div class="staff-row"><span class="staff-name">${escapeHtml(s.name)}</span><button class="icon-btn" data-action="up" ${i===0?'disabled':''} title="上へ">↑</button><button class="icon-btn" data-action="down" ${i===state.staff.length-1?'disabled':''} title="下へ">↓</button><button class="icon-btn" data-action="remove" title="削除">×</button></div>`).join('');list.querySelectorAll('.staff-row').forEach((row,i)=>{const id=state.staff[i]?.id;row.querySelector('[data-action=up]')?.addEventListener('click',()=>moveStaff(id,-1));row.querySelector('[data-action=down]')?.addEventListener('click',()=>moveStaff(id,1));row.querySelector('[data-action=remove]')?.addEventListener('click',()=>removeStaff(id))})}
+function moveStaff(id,dir){const idx=state.staff.findIndex(s=>s.id===id),target=idx+dir;if(idx<0||target<0||target>=state.staff.length)return;[state.staff[idx],state.staff[target]]=[state.staff[target],state.staff[idx]];save('staff',state.staff);renderStaffList();renderPunchScreen()}
+document.getElementById('addStaffBtn').addEventListener('click',addStaff);document.getElementById('newStaffName').addEventListener('keydown',e=>{if(e.key==='Enter')addStaff()});
+function addStaff(){const input=document.getElementById('newStaffName'),name=input.value.trim();if(!name)return;if(state.staff.some(s=>s.name===name)){showToast('同じ名前がすでに登録されています');return}const id=globalThis.crypto?.randomUUID?crypto.randomUUID():`s_${Date.now()}_${Math.random().toString(36).slice(2)}`;state.staff.push({id,name});save('staff',state.staff);input.value='';renderStaffList();renderPunchScreen();showToast(`${name}を追加しました`)}
+async function removeStaff(id){const s=state.staff.find(x=>x.id===id);if(!s)return;const ok=await confirmDialog({title:`${s.name}を名簿から削除しますか？`,body:'過去の勤務記録は残りますが、名簿からは表示されなくなります。',confirmLabel:'削除する',danger:true});if(!ok)return;state.staff=state.staff.filter(x=>x.id!==id);save('staff',state.staff);renderStaffList();renderPunchScreen();showToast(`${s.name}を名簿から削除しました`)}
 
-/* ============================================================
-   打刻画面
-   ============================================================ */
-async function handlePunch(staffId, staffName){
-  const key = dateKey(new Date());
-  const rec = getRecord(key, staffId);
-  if (!rec.in){
-    rec.in = nowHM();
-    setRecord(key, staffId, rec);
-    showToast(`${staffName}　出勤しました（${rec.in}）`);
-    renderPunchScreen();
-    return;
-  }
-  if (rec.in && !rec.out){
-    const ok = await confirmDialog({
-      title: `${staffName}を退勤にしますか？`,
-      body: `出勤 ${rec.in} からの記録を確定します。`,
-      confirmLabel: '退勤する',
-      cancelLabel: 'やっぱりやめる'
-    });
-    if (!ok) return;
-    rec.out = nowHM();
-    setRecord(key, staffId, rec);
-    const { workMin, otMin } = computeDay(rec);
-    const ym = monthKey(new Date());
-    const monthOt = monthlyOvertimeForStaff(staffId, ym);
-    renderPunchScreen();
-    await showInfoDialog({
-      title: `${staffName}　退勤しました`,
-      body: `<div style="text-align:center;line-height:1.7">
-        <div style="font-size:.95rem;color:var(--muted)">出勤 ${rec.in}　／　退勤 ${rec.out}</div>
-        <div style="margin-top:14px;font-size:1rem;color:var(--muted)">今日の時間外</div>
-        <div style="font-size:2rem;font-weight:800;color:var(--primary-dark)">${fmtMinutes(otMin)}</div>
-        <div style="margin-top:10px;font-size:1rem;color:var(--muted)">今月の時間外</div>
-        <div style="font-size:2.35rem;font-weight:900;color:var(--success)">${fmtMinutes(monthOt)}</div>
-      </div>`
-    });
-    return;
-  }
-  // 退勤済みの職員をもう一度タップしたら、今日の記録をその場で修正する。
-  openEditModal(staffId, staffName, key);
-}
+function renderBackupInfo(){const el=document.getElementById('backupInfo');if(!state.lastBackup){el.className='banner warning';el.innerHTML='<div><strong>まだバックアップを保存していません。</strong>勤務データは端末内に保存されるため、定期的にJSONバックアップを保存してください。</div>';return}const d=new Date(state.lastBackup),days=Math.max(0,Math.floor((Date.now()-d.getTime())/86400000)),label=fmtDateLabel(d);if(days>=14){el.className='banner warning';el.innerHTML=`<div><strong>前回のバックアップ：${label}</strong>${days}日前です。そろそろ保存しておくと安心です。</div>`}else{el.className='banner success';el.innerHTML=`<div><strong>前回のバックアップ：${label}</strong>大切なデータは定期的に保存してください。</div>`}}
+document.getElementById('backupBtn').addEventListener('click',()=>{const payload={type:'kinmu-kanri-backup',version:2,savedAt:new Date().toISOString(),staff:state.staff,settings:state.settings,records:state.records};downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),`勤務管理バックアップ_${dateKey(new Date())}.json`);state.lastBackup=payload.savedAt;save('lastBackup',state.lastBackup);renderBackupInfo();showToast('バックアップを保存しました')});
+document.getElementById('restoreFile').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;let data;try{data=JSON.parse(await file.text())}catch{showToast('このファイルは読み込めませんでした');return}if(!data||data.type!=='kinmu-kanri-backup'||!Array.isArray(data.staff)||typeof data.records!=='object'){showToast('バックアップファイルの形式が正しくありません');return}const ok=await confirmDialog({title:'バックアップから復元しますか？',body:`保存日時：${data.savedAt?fmtDateLabel(new Date(data.savedAt)):'不明'}\n現在の職員名簿・勤務設定・勤務記録がバックアップ内容で置き換わります。設定PINは変更されません。`,confirmLabel:'復元する',danger:true});if(!ok)return;state.staff=data.staff.map(s=>({id:String(s.id),name:String(s.name)}));state.settings=normalizeSettings(data.settings);state.records=data.records||{};save('staff',state.staff);save('settings',state.settings);save('records',state.records);showToast('データを復元しました');processAutoCheckout(new Date());renderSettingsScreen();renderPunchScreen()});
 
-function renderPunchScreen(){
-  const key = dateKey(new Date());
-  const ym = monthKey(new Date());
-  const grid = document.getElementById('staffGrid');
-  if (state.staff.length === 0){
-    grid.innerHTML = '<p class="empty-note">「設定」から職員を追加してください。</p>';
-  } else {
-    grid.innerHTML = state.staff.map(s => {
-      const rec = getRecord(key, s.id);
-      const { status, otMin } = computeDay(rec);
-      const monthOt = monthlyOvertimeForStaff(s.id, ym);
-      const timesLine = rec.in ? `出勤 ${rec.in}${rec.out ? `　退勤 ${rec.out}` : ''}` : 'まだ記録なし';
-      return `
-        <button class="staff-btn st-${status}" data-id="${s.id}" data-name="${escapeHtml(s.name)}">
-          <span class="name">${escapeHtml(s.name)}</span>
-          <span class="status">${statusLabel(status)}</span>
-          <span class="times">${timesLine}</span>
-          <span class="ot">今月の時間外：${fmtMinutes(monthOt)}</span>
-        </button>`;
-    }).join('');
-  }
-  grid.querySelectorAll('.staff-btn').forEach(btn => {
-    btn.addEventListener('click', () => handlePunch(btn.dataset.id, btn.dataset.name));
-  });
-  renderTodayTable(key);
-}
-function renderTodayTable(key){
-  const tbody = document.querySelector('#todayTable tbody');
-  if (state.staff.length === 0){
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-note">職員が登録されていません</td></tr>';
-    return;
-  }
-  tbody.innerHTML = state.staff.map(s => {
-    const rec = getRecord(key, s.id);
-    const { status, otMin } = computeDay(rec);
-    return `<tr data-id="${s.id}" data-name="${escapeHtml(s.name)}">
-      <td>${escapeHtml(s.name)}</td>
-      <td><span class="pill st-${status}">${statusLabel(status)}</span></td>
-      <td>${rec.in || '-'}</td>
-      <td>${rec.out || '-'}</td>
-      <td>${rec.out ? fmtMinutes(otMin) : '-'}</td>
-    </tr>`;
-  }).join('');
-
-  tbody.querySelectorAll('tr[data-id]').forEach(tr => {
-    tr.addEventListener('click', () => openEditModal(tr.dataset.id, tr.dataset.name, key));
-  });
-}
-
-/* ============================================================
-   勤務記録画面
-   ============================================================ */
-let historyDate = new Date();
-function renderHistoryScreen(){
-  const dateInput = document.getElementById('historyDate');
-  dateInput.value = dateKey(historyDate);
-  document.querySelector('#screen-history h2').textContent = `勤務記録　${fmtDateLabel(historyDate)}`;
-  const key = dateKey(historyDate);
-  const tbody = document.querySelector('#historyTable tbody');
-  if (state.staff.length === 0){
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-note">職員が登録されていません</td></tr>';
-    return;
-  }
-  tbody.innerHTML = state.staff.map(s => {
-    const rec = getRecord(key, s.id);
-    const { status, workMin, otMin, earlyMin } = computeDay(rec);
-    return `<tr data-id="${s.id}" data-name="${escapeHtml(s.name)}">
-      <td>${escapeHtml(s.name)}</td>
-      <td><span class="pill st-${status}">${statusLabel(status)}</span></td>
-      <td>${rec.in || '-'}</td>
-      <td>${rec.out || '-'}</td>
-      <td>${rec.out ? fmtMinutes(workMin) : '-'}</td>
-      <td>${rec.out ? fmtMinutes(otMin) : '-'}</td>
-      <td>${rec.in ? fmtMinutes(earlyMin) : '-'}</td>
-    </tr>`;
-  }).join('');
-  tbody.querySelectorAll('tr').forEach(tr => {
-    tr.addEventListener('click', () => openEditModal(tr.dataset.id, tr.dataset.name, key));
-  });
-}
-document.getElementById('historyDate').addEventListener('change', (e) => {
-  if (e.target.value){ historyDate = new Date(e.target.value + 'T00:00:00'); renderHistoryScreen(); }
-});
-document.getElementById('historyPrev').addEventListener('click', () => { historyDate.setDate(historyDate.getDate()-1); renderHistoryScreen(); });
-document.getElementById('historyNext').addEventListener('click', () => { historyDate.setDate(historyDate.getDate()+1); renderHistoryScreen(); });
-document.getElementById('historyToday').addEventListener('click', () => { historyDate = new Date(); renderHistoryScreen(); });
-
-let editContext = null;
-function openEditModal(staffId, staffName, dateStr){
-  editContext = { staffId, dateStr };
-  const rec = getRecord(dateStr, staffId);
-  document.getElementById('editTitle').textContent = `${staffName}の記録を修正（${dateStr}）`;
-  document.getElementById('editIn').value = rec.in || '';
-  document.getElementById('editOut').value = rec.out || '';
-  document.getElementById('editOverlay').classList.add('is-open');
-}
-document.getElementById('editCancelBtn').addEventListener('click', () => {
-  document.getElementById('editOverlay').classList.remove('is-open');
-});
-document.getElementById('editSaveBtn').addEventListener('click', () => {
-  const inVal = document.getElementById('editIn').value || null;
-  const outVal = document.getElementById('editOut').value || null;
-  setRecord(editContext.dateStr, editContext.staffId, { in: inVal, out: outVal });
-  document.getElementById('editOverlay').classList.remove('is-open');
-  showToast('記録を修正しました');
-  renderHistoryScreen();
-  renderPunchScreen();
-});
-document.getElementById('editClearBtn').addEventListener('click', async () => {
-  const ok = await confirmDialog({
-    title: 'この日の記録を削除しますか？',
-    body: '出勤・退勤の記録が両方とも削除されます。この操作は元に戻せません。',
-    confirmLabel: '削除する', danger: true
-  });
-  if (!ok) return;
-  setRecord(editContext.dateStr, editContext.staffId, { in:null, out:null });
-  document.getElementById('editOverlay').classList.remove('is-open');
-  showToast('記録を削除しました');
-  renderHistoryScreen();
-  renderPunchScreen();
-});
-
-/* ============================================================
-   月別集計画面
-   ============================================================ */
-function renderSummaryScreen(){
-  const monthInput = document.getElementById('summaryMonth');
-  if (!monthInput.value) monthInput.value = monthKey(new Date());
-  const ym = monthInput.value;
-  const rows = summarizeMonth(ym);
-  document.querySelector('#screen-summary h2').textContent = `月別集計　${fmtMonthLabel(ym)}`;
-  const tbody = document.querySelector('#summaryTable tbody');
-  const tfoot = document.querySelector('#summaryTable tfoot');
-  if (rows.length === 0){
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-note">この月の記録はまだありません</td></tr>';
-    tfoot.innerHTML = '';
-    return;
-  }
-  tbody.innerHTML = rows.map(r => `<tr>
-    <td>${escapeHtml(r.name)}</td>
-    <td>${r.days}日</td>
-    <td>${fmtMinutes(r.workMin)}</td>
-    <td>${fmtMinutes(r.otMin)}</td>
-    <td>${fmtMinutes(r.earlyMin)}</td>
-    <td>${r.avgIn || '-'}</td>
-    <td>${r.avgOut || '-'}</td>
-  </tr>`).join('');
-  const totalOt = rows.reduce((sum, r) => sum + r.otMin, 0);
-  const totalWork = rows.reduce((sum, r) => sum + r.workMin, 0);
-  tfoot.innerHTML = `<tr class="total-row">
-    <td>学校全体</td><td>-</td><td>${fmtMinutes(totalWork)}</td><td>${fmtMinutes(totalOt)}</td>
-    <td>-</td><td>-</td><td>-</td>
-  </tr>`;
-}
-function summarizeMonth(ym){
-  const results = state.staff.map(s => {
-    let days = 0, workMin = 0, otMin = 0, earlyMin = 0;
-    const inTimes = [], outTimes = [];
-    for (const dateStr of Object.keys(state.records)){
-      if (!dateStr.startsWith(ym)) continue;
-      const rec = state.records[dateStr][s.id];
-      if (!rec) continue;
-      const c = computeDay(rec);
-      if (rec.in && rec.out){
-        days += 1;
-        workMin += c.workMin || 0;
-        otMin += c.otMin || 0;
-        inTimes.push(toMinutes(rec.in));
-        outTimes.push(toMinutes(rec.out));
+function processAutoCheckout(now=new Date()){
+  let changed=false,count=0;const todayKey=dateKey(now),nowM=toMinutes(nowHM(now));
+  for(const dateStr of Object.keys(state.records)){
+    const isPast=dateStr<todayKey;
+    for(const s of state.staff){
+      const rec=recordFor(dateStr,s.id);if(!rec.in||rec.out)continue;const settings=effectiveWorkSettings(rec),autoM=toMinutes(settings.autoOut);if(autoM===null)continue;
+      if(isPast||(dateStr===todayKey&&nowM>=autoM)){
+        rec.out=settings.autoOut;rec.autoCheckout=true;putRecord(dateStr,s.id,rec);changed=true;count++;
       }
-      earlyMin += c.earlyMin || 0;
-    }
-    const avg = (arr) => arr.length ? `${pad(Math.floor(avgOf(arr)/60))}:${pad(Math.round(avgOf(arr)%60))}` : null;
-    return { name: s.name, days, workMin, otMin, earlyMin, avgIn: avg(inTimes), avgOut: avg(outTimes) };
-  });
-  return results
-    .filter(r => r.days > 0 || r.earlyMin > 0)
-    .sort((a, b) => b.otMin - a.otMin);
-}
-function avgOf(arr){ return arr.reduce((s,v) => s+v, 0) / arr.length; }
-
-document.getElementById('summaryMonth').addEventListener('change', renderSummaryScreen);
-document.getElementById('csvExportBtn').addEventListener('click', () => {
-  const ym = document.getElementById('summaryMonth').value || monthKey(new Date());
-  const rows = summarizeMonth(ym);
-  const header = ['職員','勤務日数','総勤務時間(分)','総時間外勤務(分)','早出時間(分)','平均出勤','平均退勤'];
-  const lines = [header.join(',')];
-  rows.forEach(r => {
-    lines.push([r.name, r.days, r.workMin, r.otMin, r.earlyMin, r.avgIn||'', r.avgOut||''].join(','));
-  });
-  const csv = '\uFEFF' + lines.join('\r\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  downloadBlob(blob, `勤務集計_${ym}.csv`);
-});
-
-/* ============================================================
-   設定画面
-   ============================================================ */
-function renderSettingsScreen(){
-  document.getElementById('setStart').value = state.settings.start;
-  document.getElementById('setEnd').value = state.settings.end;
-  document.getElementById('setBreak').value = state.settings.breakMin;
-  document.getElementById('setAutoOut').value = state.settings.autoOut || '17:00';
-  renderStaffList();
-  renderBackupInfo();
-}
-document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-  const start = document.getElementById('setStart').value;
-  const end = document.getElementById('setEnd').value;
-  const breakMin = Number(document.getElementById('setBreak').value || 0);
-  const autoOut = document.getElementById('setAutoOut').value || '17:00';
-  if (!start || !end || !autoOut){ showToast('勤務開始・終了・自動退勤時刻を入力してください'); return; }
-  state.settings = { start, end, breakMin, autoOut };
-  saveSettings();
-  showToast('設定を保存しました');
-  renderPunchScreen();
-});
-
-function renderStaffList(){
-  const list = document.getElementById('staffList');
-  if (state.staff.length === 0){
-    list.innerHTML = '<p class="empty-note">まだ職員が登録されていません。下から追加してください。</p>';
-    return;
-  }
-  list.innerHTML = state.staff.map((s, i) => `
-    <div class="staff-row" data-id="${s.id}">
-      <span class="staff-name">${escapeHtml(s.name)}</span>
-      <button class="icon-btn" data-action="up" ${i===0 ? 'disabled' : ''} title="上へ">↑</button>
-      <button class="icon-btn" data-action="down" ${i===state.staff.length-1 ? 'disabled' : ''} title="下へ">↓</button>
-      <button class="icon-btn" data-action="remove" title="削除">×</button>
-    </div>`).join('');
-  list.querySelectorAll('.staff-row').forEach(row => {
-    const id = row.dataset.id;
-    row.querySelector('[data-action=up]')?.addEventListener('click', () => moveStaff(id, -1));
-    row.querySelector('[data-action=down]')?.addEventListener('click', () => moveStaff(id, 1));
-    row.querySelector('[data-action=remove]').addEventListener('click', () => removeStaff(id));
-  });
-}
-function moveStaff(id, dir){
-  const idx = state.staff.findIndex(s => s.id === id);
-  const target = idx + dir;
-  if (target < 0 || target >= state.staff.length) return;
-  [state.staff[idx], state.staff[target]] = [state.staff[target], state.staff[idx]];
-  saveStaff();
-  renderStaffList();
-  renderPunchScreen();
-}
-async function removeStaff(id){
-  const staff = state.staff.find(s => s.id === id);
-  const ok = await confirmDialog({
-    title: `${staff.name}を職員名簿から削除しますか？`,
-    body: '過去の勤務記録は残りますが、名簿からは表示されなくなります。',
-    confirmLabel: '削除する', danger: true
-  });
-  if (!ok) return;
-  state.staff = state.staff.filter(s => s.id !== id);
-  saveStaff();
-  renderStaffList();
-  renderPunchScreen();
-}
-document.getElementById('addStaffBtn').addEventListener('click', addStaff);
-document.getElementById('newStaffName').addEventListener('keydown', (e) => { if (e.key === 'Enter') addStaff(); });
-function addStaff(){
-  const input = document.getElementById('newStaffName');
-  const name = input.value.trim();
-  if (!name) return;
-  const id = (globalThis.crypto?.randomUUID) ? crypto.randomUUID() : `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  state.staff.push({ id, name });
-  saveStaff();
-  input.value = '';
-  renderStaffList();
-  renderPunchScreen();
-  showToast(`${name}を追加しました`);
-}
-
-/* ---- バックアップ / 復元 ---- */
-function renderBackupInfo(){
-  const el = document.getElementById('backupInfo');
-  if (!state.lastBackup){
-    el.className = 'backup-info';
-    el.textContent = 'まだバックアップを保存していません。「バックアップを保存」しておくと安心です。';
-    return;
-  }
-  const last = new Date(state.lastBackup);
-  const days = Math.floor((Date.now() - last.getTime()) / 86400000);
-  const label = `${fmtDateLabel(last)}`;
-  if (days >= 14){
-    el.className = 'backup-info';
-    el.textContent = `前回のバックアップ：${label}（${days}日前）。そろそろ保存しておくと安心です。`;
-  } else {
-    el.className = 'backup-info is-ok';
-    el.textContent = `前回のバックアップ：${label}`;
-  }
-}
-function downloadBlob(blob, filename){
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-document.getElementById('backupBtn').addEventListener('click', () => {
-  const payload = {
-    type: 'kinmu-kanri-backup', version: 1,
-    savedAt: new Date().toISOString(),
-    staff: state.staff, settings: state.settings, records: state.records
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const stamp = dateKey(new Date());
-  downloadBlob(blob, `勤務管理バックアップ_${stamp}.json`);
-  saveLastBackup(payload.savedAt);
-  renderBackupInfo();
-  showToast('バックアップを保存しました');
-});
-document.getElementById('restoreFile').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  e.target.value = '';
-  if (!file) return;
-  let data;
-  try{
-    const text = await file.text();
-    data = JSON.parse(text);
-  }catch{
-    showToast('このファイルは読み込めませんでした');
-    return;
-  }
-  if (!data || data.type !== 'kinmu-kanri-backup' || !Array.isArray(data.staff) || !data.records){
-    showToast('バックアップファイルの形式が正しくありません');
-    return;
-  }
-  const ok = await confirmDialog({
-    title: 'バックアップから復元しますか？',
-    body: `現在のデータは、このバックアップ（${data.savedAt ? fmtDateLabel(new Date(data.savedAt)) : '不明な日時'}保存）の内容で置き換えられます。この操作は元に戻せません。`,
-    confirmLabel: '復元する', danger: true
-  });
-  if (!ok) return;
-  state.staff = data.staff;
-  state.settings = data.settings || DEFAULT_SETTINGS;
-  state.records = data.records || {};
-  saveStaff(); saveSettings(); saveRecords();
-  showToast('データを復元しました');
-  renderSettingsScreen();
-  renderPunchScreen();
-});
-
-/* ============================================================
-   共通
-   ============================================================ */
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-/* ---- 退勤忘れの自動処理 ---- */
-function autoCheckoutIfNeeded(now = new Date()){
-  const autoOut = state.settings.autoOut || '17:00';
-  const key = dateKey(now);
-  const nowMinutes = toMinutes(nowHM(now));
-  const autoOutMinutes = toMinutes(autoOut);
-  if (autoOutMinutes === null || nowMinutes < autoOutMinutes) return;
-
-  const markerKey = `autoCheckout:${key}`;
-  if (store.load(markerKey, false)) return;
-
-  let count = 0;
-  for (const staff of state.staff){
-    const rec = getRecord(key, staff.id);
-    if (rec.in && !rec.out){
-      rec.out = autoOut;
-      setRecord(key, staff.id, rec);
-      count += 1;
     }
   }
-
-  store.save(markerKey, true);
-  if (count > 0){
-    showToast(`退勤忘れの${count}名を${autoOut}として自動退勤にしました`);
-    if (screenManager.getCurrent() === 'punch') renderPunchScreen();
-    if (screenManager.getCurrent() === 'history') renderHistoryScreen();
-    if (screenManager.getCurrent() === 'summary') renderSummaryScreen();
-  }
+  if(count&&currentScreen==='punch')renderPunchScreen();if(count&&currentScreen==='history')renderHistoryScreen();if(count&&currentScreen==='summary')renderSummaryScreen();if(count)showToast(`退勤忘れの${count}名を自動退勤として記録しました`);return changed
 }
+function tickClock(){const now=new Date();document.getElementById('topDate').textContent=fmtDateLabel(now);document.getElementById('topClock').textContent=nowHM(now)}
+tickClock();processAutoCheckout(new Date());setInterval(tickClock,1000);setInterval(()=>{const now=new Date();processAutoCheckout(now);if(currentScreen==='punch')renderTodayTable(dateKey(now))},15000);
 
-/* ---- 上部の日付・時計 ---- */
-function tickClock(){
-  const now = new Date();
-  document.getElementById('topDate').textContent = fmtDateLabel(now);
-  document.getElementById('topClock').textContent = nowHM(now);
-}
-tickClock();
-autoCheckoutIfNeeded(new Date());
-setInterval(() => {
-  const now = new Date();
-  tickClock();
-  autoCheckoutIfNeeded(now);
-  if (screenManager.getCurrent() === 'punch') renderTodayTable(dateKey(now));
-}, 1000 * 15);
-setInterval(tickClock, 1000);
-
-/* ---- 初期表示 ---- */
 showScreen('punch');
 </script>
 </body>
