@@ -14,6 +14,15 @@
 - 職員名簿の追加・並べ替え・削除
 - JSONバックアップと復元
 - 設定画面を4桁PINで保護
+- `index.html` をそのまま保存してオフライン利用
+
+## オフライン版
+
+インターネットにつながらない場所でも使えるよう、単体の `index.html` を保存できます。
+
+[オフライン版を保存する](https://tt-sensei.github.io/kinmukanri/download.html)
+
+保存されるファイルは `kinmu-kanri-offline.html` です。アプリ本体を1ファイルで保存するため、特別なインストールは必要ありません。
 
 ## 初期PIN
 
